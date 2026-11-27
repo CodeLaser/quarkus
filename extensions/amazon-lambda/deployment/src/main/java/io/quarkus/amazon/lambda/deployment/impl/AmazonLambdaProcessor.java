@@ -1,4 +1,4 @@
-package io.quarkus.amazon.lambda.deployment;
+package io.quarkus.amazon.lambda.deployment.impl;
 
 import java.lang.reflect.Method;
 import java.util.ArrayList;
@@ -20,7 +20,9 @@ import org.joda.time.DateTime;
 import com.amazonaws.services.lambda.runtime.RequestHandler;
 import com.amazonaws.services.lambda.runtime.RequestStreamHandler;
 
-import io.quarkus.amazon.lambda.deployment.RequestHandlerJandexUtil.RequestHandlerJandexDefinition;
+import io.quarkus.amazon.lambda.deployment.LambdaObjectMapperInitializedBuildItem;
+import io.quarkus.amazon.lambda.deployment.ProvidedAmazonLambdaHandlerBuildItem;
+import io.quarkus.amazon.lambda.deployment.impl.RequestHandlerJandexUtil.RequestHandlerJandexDefinition;
 import io.quarkus.amazon.lambda.runtime.AmazonLambdaRecorder;
 import io.quarkus.amazon.lambda.runtime.AmazonLambdaRecorder.RequestHandlerClassNames;
 import io.quarkus.amazon.lambda.runtime.FunctionError;
