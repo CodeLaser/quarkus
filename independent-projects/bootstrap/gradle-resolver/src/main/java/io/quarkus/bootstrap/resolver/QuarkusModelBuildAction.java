@@ -1,25 +1,13 @@
 package io.quarkus.bootstrap.resolver;
 
-import java.io.Serializable;
-
-import org.gradle.tooling.BuildAction;
-import org.gradle.tooling.BuildController;
-
-import io.quarkus.bootstrap.model.ApplicationModel;
-import io.quarkus.bootstrap.model.gradle.ModelParameter;
-
-public class QuarkusModelBuildAction implements BuildAction<ApplicationModel>, Serializable {
-
-    private static final long serialVersionUID = 9152408068581769671L;
-
-    private final String mode;
-
+/**
+ * @deprecated moved to {@link io.quarkus.bootstrap.resolver.gradle.QuarkusModelBuildAction}. This type remains so that code
+ *             written
+ *             against the old name keeps working; it will be removed.
+ */
+@Deprecated(forRemoval = true, since = "4.1")
+public class QuarkusModelBuildAction extends io.quarkus.bootstrap.resolver.gradle.QuarkusModelBuildAction {
     public QuarkusModelBuildAction(String mode) {
-        this.mode = mode;
-    }
-
-    @Override
-    public ApplicationModel execute(BuildController controller) {
-        return controller.getModel(ApplicationModel.class, ModelParameter.class, p -> p.setMode(mode));
+        super(mode);
     }
 }

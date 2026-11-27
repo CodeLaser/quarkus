@@ -1,11 +1,11 @@
 package io.quarkus.bootstrap.resolver.maven;
 
+import static io.quarkus.bootstrap.resolver.maven.DependencyUtils.getCoords;
+import static io.quarkus.bootstrap.resolver.maven.DependencyUtils.getKey;
+import static io.quarkus.bootstrap.resolver.maven.DependencyUtils.getWinner;
+import static io.quarkus.bootstrap.resolver.maven.DependencyUtils.hasWinner;
+import static io.quarkus.bootstrap.resolver.maven.DependencyUtils.newDependencyBuilder;
 import static io.quarkus.bootstrap.util.BootstrapUtils.matches;
-import static io.quarkus.bootstrap.util.DependencyUtils.getCoords;
-import static io.quarkus.bootstrap.util.DependencyUtils.getKey;
-import static io.quarkus.bootstrap.util.DependencyUtils.getWinner;
-import static io.quarkus.bootstrap.util.DependencyUtils.hasWinner;
-import static io.quarkus.bootstrap.util.DependencyUtils.newDependencyBuilder;
 
 import java.io.BufferedReader;
 import java.io.IOException;
@@ -44,11 +44,9 @@ import org.eclipse.aether.util.graph.selector.ExclusionDependencySelector;
 import org.jboss.logging.Logger;
 
 import io.quarkus.bootstrap.BootstrapConstants;
-import io.quarkus.bootstrap.BootstrapDependencyProcessingException;
 import io.quarkus.bootstrap.model.ApplicationModelBuilder;
 import io.quarkus.bootstrap.model.PlatformImportsImpl;
 import io.quarkus.bootstrap.resolver.AppModelResolverException;
-import io.quarkus.bootstrap.util.DependencyUtils;
 import io.quarkus.bootstrap.workspace.WorkspaceModule;
 import io.quarkus.maven.dependency.ArtifactCoords;
 import io.quarkus.maven.dependency.ArtifactCoordsPattern;

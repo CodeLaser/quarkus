@@ -44,7 +44,6 @@ import org.eclipse.aether.version.InvalidVersionSpecificationException;
 import org.eclipse.aether.version.Version;
 
 import io.quarkus.bootstrap.resolver.maven.workspace.ProjectModuleResolver;
-import io.quarkus.bootstrap.util.DependencyUtils;
 import io.quarkus.bootstrap.util.PropertyUtils;
 import io.quarkus.maven.dependency.ArtifactKey;
 

@@ -3,8 +3,8 @@
  */
 package io.quarkus.bootstrap.resolver.maven;
 
-import static io.quarkus.bootstrap.util.DependencyUtils.getKey;
-import static io.quarkus.bootstrap.util.DependencyUtils.newDependencyBuilder;
+import static io.quarkus.bootstrap.resolver.maven.DependencyUtils.getKey;
+import static io.quarkus.bootstrap.resolver.maven.DependencyUtils.newDependencyBuilder;
 
 import java.util.ArrayList;
 import java.util.List;

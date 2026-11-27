@@ -17,8 +17,8 @@ import java.util.Properties;
 
 import org.eclipse.aether.artifact.Artifact;
 
+import io.quarkus.bootstrap.resolver.maven.DependencyUtils;
 import io.quarkus.bootstrap.resolver.maven.MavenArtifactResolver;
-import io.quarkus.bootstrap.util.DependencyUtils;
 import io.quarkus.devtools.messagewriter.MessageWriter;
 import io.quarkus.platform.descriptor.loader.json.ResourceLoader;
 import io.quarkus.registry.catalog.Extension;

@@ -5,9 +5,9 @@ import static org.assertj.core.api.Assertions.assertThat;
 import java.util.HashMap;
 
 import io.quarkus.bootstrap.model.ApplicationModel;
-import io.quarkus.bootstrap.resolver.BootstrapAppModelResolver;
 import io.quarkus.bootstrap.resolver.TsArtifact;
 import io.quarkus.bootstrap.resolver.TsQuarkusExt;
+import io.quarkus.bootstrap.resolver.maven.BootstrapAppModelResolver;
 import io.quarkus.deployment.runnerjar.BootstrapFromOriginalJarTestBase;
 import io.quarkus.maven.dependency.ResolvedDependency;
 

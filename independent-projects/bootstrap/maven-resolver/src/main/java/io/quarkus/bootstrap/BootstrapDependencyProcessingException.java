@@ -1,18 +1,13 @@
 package io.quarkus.bootstrap;
 
-import io.quarkus.bootstrap.resolver.maven.BootstrapMavenException;
-
 /**
- *
- * @author Alexey Loubyansky
+ * @deprecated moved to {@link io.quarkus.bootstrap.resolver.maven.BootstrapDependencyProcessingException}. This type remains so
+ *             that code written
+ *             against the old name keeps working; it will be removed.
  */
-public class BootstrapDependencyProcessingException extends BootstrapMavenException {
-
-    /**
-     *
-     */
-    private static final long serialVersionUID = 1L;
-
+@Deprecated(forRemoval = true, since = "4.1")
+public class BootstrapDependencyProcessingException
+        extends io.quarkus.bootstrap.resolver.maven.BootstrapDependencyProcessingException {
     public BootstrapDependencyProcessingException(String message, Throwable cause) {
         super(message, cause);
     }
