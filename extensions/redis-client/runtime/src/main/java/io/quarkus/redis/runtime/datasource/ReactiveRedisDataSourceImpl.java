@@ -1,6 +1,6 @@
 package io.quarkus.redis.runtime.datasource;
 
-import static io.quarkus.redis.runtime.datasource.Validation.notNullOrEmpty;
+import static io.quarkus.redis.datasource.internal.Validation.notNullOrEmpty;
 import static io.smallrye.mutiny.helpers.ParameterValidation.doesNotContainNull;
 import static io.smallrye.mutiny.helpers.ParameterValidation.nonNull;
 import static io.smallrye.mutiny.helpers.ParameterValidation.positiveOrZero;

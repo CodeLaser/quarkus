@@ -1,9 +1,9 @@
 package io.quarkus.redis.runtime.datasource;
 
-import static io.quarkus.redis.runtime.datasource.Validation.notNullOrBlank;
-import static io.quarkus.redis.runtime.datasource.Validation.notNullOrEmpty;
-import static io.quarkus.redis.runtime.datasource.Validation.positive;
-import static io.quarkus.redis.runtime.datasource.Validation.validateTimeout;
+import static io.quarkus.redis.datasource.internal.Validation.notNullOrBlank;
+import static io.quarkus.redis.datasource.internal.Validation.notNullOrEmpty;
+import static io.quarkus.redis.datasource.internal.Validation.positive;
+import static io.quarkus.redis.datasource.internal.Validation.validateTimeout;
 import static io.smallrye.mutiny.helpers.ParameterValidation.doesNotContainNull;
 import static io.smallrye.mutiny.helpers.ParameterValidation.nonNull;
 
@@ -13,6 +13,7 @@ import java.util.ArrayList;
 import java.util.List;
 import java.util.Map;
 
+import io.quarkus.redis.datasource.internal.Marshaller;
 import io.quarkus.redis.datasource.stream.StreamRange;
 import io.quarkus.redis.datasource.stream.XAddArgs;
 import io.quarkus.redis.datasource.stream.XClaimArgs;

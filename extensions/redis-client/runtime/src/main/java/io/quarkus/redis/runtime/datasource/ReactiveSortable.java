@@ -6,6 +6,7 @@ import java.lang.reflect.Type;
 import java.util.List;
 
 import io.quarkus.redis.datasource.SortArgs;
+import io.quarkus.redis.datasource.internal.Marshaller;
 import io.smallrye.mutiny.Uni;
 import io.vertx.redis.client.Command;
 import io.vertx.redis.client.Response;

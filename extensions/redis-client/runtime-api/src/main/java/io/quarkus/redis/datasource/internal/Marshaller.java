@@ -1,4 +1,4 @@
-package io.quarkus.redis.runtime.datasource;
+package io.quarkus.redis.datasource.internal;
 
 import static io.smallrye.mutiny.helpers.ParameterValidation.doesNotContainNull;
 import static io.smallrye.mutiny.helpers.ParameterValidation.nonNull;
@@ -163,7 +163,7 @@ public class Marshaller {
         return set;
     }
 
-    final <F, V> Map<F, V> decodeAsOrderedMap(Response response, Type typeOfValue, F[] fields) {
+    public final <F, V> Map<F, V> decodeAsOrderedMap(Response response, Type typeOfValue, F[] fields) {
         Iterator<Response> iterator = response.iterator();
         Map<F, V> map = new LinkedHashMap<>();
         for (F field : fields) {

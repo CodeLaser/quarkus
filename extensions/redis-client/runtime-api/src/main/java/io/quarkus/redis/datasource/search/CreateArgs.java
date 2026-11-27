@@ -1,9 +1,9 @@
 package io.quarkus.redis.datasource.search;
 
-import static io.quarkus.redis.runtime.datasource.Validation.notNullOrBlank;
-import static io.quarkus.redis.runtime.datasource.Validation.notNullOrEmpty;
-import static io.quarkus.redis.runtime.datasource.Validation.positive;
-import static io.quarkus.redis.runtime.datasource.Validation.validateTimeout;
+import static io.quarkus.redis.datasource.internal.Validation.notNullOrBlank;
+import static io.quarkus.redis.datasource.internal.Validation.notNullOrEmpty;
+import static io.quarkus.redis.datasource.internal.Validation.positive;
+import static io.quarkus.redis.datasource.internal.Validation.validateTimeout;
 import static io.smallrye.mutiny.helpers.ParameterValidation.doesNotContainNull;
 
 import java.time.Duration;

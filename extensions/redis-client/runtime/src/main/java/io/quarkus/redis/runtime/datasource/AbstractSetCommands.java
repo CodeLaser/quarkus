@@ -1,6 +1,6 @@
 package io.quarkus.redis.runtime.datasource;
 
-import static io.quarkus.redis.runtime.datasource.Validation.notNullOrEmpty;
+import static io.quarkus.redis.datasource.internal.Validation.notNullOrEmpty;
 import static io.smallrye.mutiny.helpers.ParameterValidation.doesNotContainNull;
 import static io.smallrye.mutiny.helpers.ParameterValidation.nonNull;
 import static io.smallrye.mutiny.helpers.ParameterValidation.positive;
@@ -9,6 +9,7 @@ import java.lang.reflect.Type;
 import java.util.List;
 import java.util.Set;
 
+import io.quarkus.redis.datasource.internal.Marshaller;
 import io.smallrye.mutiny.Uni;
 import io.vertx.redis.client.Command;
 import io.vertx.redis.client.Response;

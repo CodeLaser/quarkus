@@ -1,6 +1,6 @@
 package io.quarkus.redis.runtime.datasource;
 
-import static io.quarkus.redis.runtime.datasource.Validation.notNullOrBlank;
+import static io.quarkus.redis.datasource.internal.Validation.notNullOrBlank;
 import static io.smallrye.mutiny.helpers.ParameterValidation.doesNotContainNull;
 import static io.smallrye.mutiny.helpers.ParameterValidation.nonNull;
 
@@ -8,6 +8,7 @@ import java.lang.reflect.Type;
 import java.util.ArrayList;
 import java.util.List;
 
+import io.quarkus.redis.datasource.internal.Marshaller;
 import io.quarkus.redis.datasource.json.JsonSetArgs;
 import io.smallrye.mutiny.Uni;
 import io.vertx.core.json.Json;

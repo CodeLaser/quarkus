@@ -1,13 +1,14 @@
 package io.quarkus.redis.runtime.datasource;
 
-import static io.quarkus.redis.runtime.datasource.Validation.isBit;
-import static io.quarkus.redis.runtime.datasource.Validation.notNullOrEmpty;
+import static io.quarkus.redis.datasource.internal.Validation.isBit;
+import static io.quarkus.redis.datasource.internal.Validation.notNullOrEmpty;
 import static io.smallrye.mutiny.helpers.ParameterValidation.nonNull;
 
 import java.lang.reflect.Type;
 import java.util.List;
 
 import io.quarkus.redis.datasource.bitmap.BitFieldArgs;
+import io.quarkus.redis.datasource.internal.Marshaller;
 import io.smallrye.mutiny.Uni;
 import io.vertx.redis.client.Command;
 import io.vertx.redis.client.Response;

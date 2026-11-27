@@ -4,6 +4,7 @@ import java.lang.reflect.Type;
 import java.util.ArrayList;
 import java.util.List;
 
+import io.quarkus.redis.datasource.internal.Marshaller;
 import io.quarkus.redis.datasource.set.ReactiveSScanCursor;
 import io.smallrye.mutiny.Multi;
 import io.smallrye.mutiny.Uni;

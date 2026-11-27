@@ -23,7 +23,7 @@ import io.quarkus.cache.CacheException;
 import io.quarkus.cache.CompositeCacheKey;
 import io.quarkus.cache.runtime.AbstractCache;
 import io.quarkus.redis.client.RedisClientName;
-import io.quarkus.redis.runtime.datasource.Marshaller;
+import io.quarkus.redis.datasource.internal.Marshaller;
 import io.quarkus.redis.runtime.datasource.RedisConnections;
 import io.quarkus.runtime.BlockingOperationControl;
 import io.smallrye.mutiny.Uni;
