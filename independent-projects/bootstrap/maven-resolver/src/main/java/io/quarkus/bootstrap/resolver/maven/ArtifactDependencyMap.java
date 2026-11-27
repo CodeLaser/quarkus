@@ -8,7 +8,6 @@ import java.util.concurrent.ConcurrentHashMap;
 
 import org.eclipse.aether.graph.Dependency;
 
-import io.quarkus.bootstrap.util.DependencyUtils;
 import io.quarkus.maven.dependency.ArtifactKey;
 
 /**

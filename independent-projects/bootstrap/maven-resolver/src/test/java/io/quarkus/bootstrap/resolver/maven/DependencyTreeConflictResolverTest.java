@@ -1,7 +1,7 @@
 package io.quarkus.bootstrap.resolver.maven;
 
-import static io.quarkus.bootstrap.util.DependencyUtils.getKey;
-import static io.quarkus.bootstrap.util.DependencyUtils.hasWinner;
+import static io.quarkus.bootstrap.resolver.maven.DependencyUtils.getKey;
+import static io.quarkus.bootstrap.resolver.maven.DependencyUtils.hasWinner;
 import static org.assertj.core.api.Assertions.assertThat;
 
 import java.util.ArrayList;

@@ -1,7 +1,7 @@
 package io.quarkus.bootstrap.resolver.maven;
 
-import static io.quarkus.bootstrap.util.DependencyUtils.getKey;
-import static io.quarkus.bootstrap.util.DependencyUtils.toArtifact;
+import static io.quarkus.bootstrap.resolver.maven.DependencyUtils.getKey;
+import static io.quarkus.bootstrap.resolver.maven.DependencyUtils.toArtifact;
 
 import java.util.Arrays;
 import java.util.Properties;
@@ -9,7 +9,6 @@ import java.util.Properties;
 import org.eclipse.aether.artifact.Artifact;
 
 import io.quarkus.bootstrap.BootstrapConstants;
-import io.quarkus.bootstrap.BootstrapDependencyProcessingException;
 import io.quarkus.bootstrap.model.ApplicationModelBuilder;
 import io.quarkus.bootstrap.model.CapabilityContract;
 import io.quarkus.bootstrap.util.BootstrapUtils;

@@ -1,8 +1,8 @@
 package io.quarkus.bootstrap.resolver.test;
 
-import io.quarkus.bootstrap.resolver.BootstrapAppModelResolver;
 import io.quarkus.bootstrap.resolver.CollectDependenciesBase;
 import io.quarkus.bootstrap.resolver.TsArtifact;
+import io.quarkus.bootstrap.resolver.maven.BootstrapAppModelResolver;
 import io.quarkus.maven.dependency.DependencyFlags;
 
 /**
