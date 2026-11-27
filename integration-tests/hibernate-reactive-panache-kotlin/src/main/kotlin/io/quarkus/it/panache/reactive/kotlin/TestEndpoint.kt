@@ -2,8 +2,8 @@
 
 package io.quarkus.it.panache.reactive.kotlin
 
-import io.quarkus.hibernate.reactive.panache.Panache
 import io.quarkus.hibernate.reactive.panache.common.WithTransaction
+import io.quarkus.hibernate.reactive.panache.kotlin.Panache
 import io.quarkus.hibernate.reactive.panache.kotlin.PanacheEntityBase
 import io.quarkus.hibernate.reactive.panache.kotlin.PanacheQuery
 import io.quarkus.panache.common.Page

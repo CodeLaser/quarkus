@@ -1,8 +1,8 @@
 package io.quarkus.it.panache.reactive.kotlin
 
-import io.quarkus.hibernate.reactive.panache.Panache
 import io.quarkus.hibernate.reactive.panache.common.WithSession
 import io.quarkus.hibernate.reactive.panache.common.WithTransaction
+import io.quarkus.hibernate.reactive.panache.kotlin.Panache
 import io.quarkus.test.TestReactiveTransaction
 import io.quarkus.test.junit.DisabledOnIntegrationTest
 import io.quarkus.test.junit.QuarkusTest
