@@ -1,4 +1,4 @@
-package io.quarkus.undertow.deployment;
+package io.quarkus.undertow.deployment.impl;
 
 import java.io.IOException;
 import java.io.InputStream;
@@ -33,6 +33,7 @@ import io.quarkus.deployment.annotations.BuildStep;
 import io.quarkus.deployment.builditem.AdditionalApplicationArchiveMarkerBuildItem;
 import io.quarkus.deployment.builditem.ApplicationArchivesBuildItem;
 import io.quarkus.deployment.builditem.HotDeploymentWatchedFileBuildItem;
+import io.quarkus.undertow.deployment.WebMetadataBuildItem;
 
 /**
  * Build step that handles web.xml and web-fragment.xml parsing

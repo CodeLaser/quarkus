@@ -1,4 +1,4 @@
-package io.quarkus.undertow.deployment;
+package io.quarkus.undertow.deployment.impl;
 
 import static io.quarkus.runtime.configuration.ConverterSupport.DEFAULT_QUARKUS_CONVERTER_PRIORITY;
 
