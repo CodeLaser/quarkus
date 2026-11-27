@@ -14,6 +14,11 @@
     <name>Quarkus - Core - Runtime</name>
     <description>Quarkus core components</description>
 
+    <properties>
+        <!-- The tests run in the named module io.quarkus.core: GenerateLog uses java.net.http, and SmallRye Config defines a config implementation in io.quarkus.devservices.crossclassloader.runtime -->
+        <surefire.argLine.additional>--add-modules=java.net.http --add-reads=io.quarkus.core=java.net.http --add-opens=io.quarkus.core/io.quarkus.devservices.crossclassloader.runtime=io.smallrye.config</surefire.argLine.additional>
+    </properties>
+
     <dependencies>
         <dependency>
           <groupId>jakarta.annotation</groupId>
@@ -313,6 +318,22 @@
                                 <arg>-AsplitOnConfigRootDescription=true</arg>
                                 <!-- As string concatenation has a non-zero impact on startup, let's disable it for this module -->
                                 <arg>-XDstringConcat=inline</arg>
+                            </compilerArgs>
+                        </configuration>
+                    </execution>
+                    <execution>
+                        <!-- The tests compile in the named module io.quarkus.core, and GenerateLog uses java.net.http -->
+                        <id>default-testCompile</id>
+                        <phase>test-compile</phase>
+                        <goals>
+                            <goal>testCompile</goal>
+                        </goals>
+                        <configuration>
+                            <compilerArgs>
+                                <arg>--add-modules</arg>
+                                <arg>java.net.http</arg>
+                                <arg>--add-reads</arg>
+                                <arg>io.quarkus.core=java.net.http</arg>
                             </compilerArgs>
                         </configuration>
                     </execution>
