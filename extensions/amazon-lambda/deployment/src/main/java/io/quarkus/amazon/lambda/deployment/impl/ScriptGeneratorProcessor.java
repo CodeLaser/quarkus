@@ -1,7 +1,9 @@
-package io.quarkus.amazon.lambda.deployment;
+package io.quarkus.amazon.lambda.deployment.impl;
 
 import java.util.Optional;
 
+import io.quarkus.amazon.lambda.deployment.LambdaUtil;
+import io.quarkus.amazon.lambda.deployment.ProvidedAmazonLambdaHandlerBuildItem;
 import io.quarkus.deployment.annotations.BuildProducer;
 import io.quarkus.deployment.annotations.BuildStep;
 import io.quarkus.deployment.pkg.builditem.ArtifactResultBuildItem;

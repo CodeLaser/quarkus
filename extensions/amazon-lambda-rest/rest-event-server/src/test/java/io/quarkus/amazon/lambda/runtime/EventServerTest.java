@@ -17,6 +17,7 @@ import org.junit.jupiter.api.Test;
 import io.quarkus.amazon.lambda.http.model.AwsProxyRequest;
 import io.quarkus.amazon.lambda.http.model.AwsProxyResponse;
 import io.quarkus.amazon.lambda.http.model.Headers;
+import io.quarkus.amazon.lambda.runtime.events.rest.MockRestEventServer;
 import tools.jackson.databind.DeserializationFeature;
 import tools.jackson.databind.MapperFeature;
 import tools.jackson.databind.ObjectMapper;

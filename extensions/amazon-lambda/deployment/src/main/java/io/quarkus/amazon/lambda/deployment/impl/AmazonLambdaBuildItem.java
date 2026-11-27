@@ -1,4 +1,4 @@
-package io.quarkus.amazon.lambda.deployment;
+package io.quarkus.amazon.lambda.deployment.impl;
 
 import io.quarkus.builder.item.MultiBuildItem;
 

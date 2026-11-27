@@ -2,7 +2,7 @@ package io.quarkus.amazon.lambda.http.deployment;
 
 import io.quarkus.amazon.lambda.deployment.EventServerOverrideBuildItem;
 import io.quarkus.amazon.lambda.deployment.EventServerPortOverrideBuildItem;
-import io.quarkus.amazon.lambda.runtime.MockRestEventServer;
+import io.quarkus.amazon.lambda.runtime.events.rest.MockRestEventServer;
 import io.quarkus.deployment.annotations.BuildProducer;
 import io.quarkus.deployment.annotations.BuildStep;
 import io.quarkus.deployment.builditem.LaunchModeBuildItem;

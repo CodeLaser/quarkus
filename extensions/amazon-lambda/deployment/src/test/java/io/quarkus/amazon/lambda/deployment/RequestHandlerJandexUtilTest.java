@@ -19,7 +19,8 @@ import org.junit.jupiter.api.Test;
 import com.amazonaws.services.lambda.runtime.Context;
 import com.amazonaws.services.lambda.runtime.RequestHandler;
 
-import io.quarkus.amazon.lambda.deployment.RequestHandlerJandexUtil.RequestHandlerJandexDefinition;
+import io.quarkus.amazon.lambda.deployment.impl.RequestHandlerJandexUtil;
+import io.quarkus.amazon.lambda.deployment.impl.RequestHandlerJandexUtil.RequestHandlerJandexDefinition;
 import io.quarkus.deployment.index.IndexWrapper;
 import io.quarkus.deployment.index.PersistentClassIndex;
 
