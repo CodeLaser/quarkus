@@ -1,4 +1,4 @@
-package io.quarkus.undertow.deployment;
+package io.quarkus.undertow.deployment.impl;
 
 import org.jboss.metadata.property.SimpleExpressionResolver;
 

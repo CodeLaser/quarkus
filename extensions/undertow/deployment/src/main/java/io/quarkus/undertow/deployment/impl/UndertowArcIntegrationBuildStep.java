@@ -1,4 +1,4 @@
-package io.quarkus.undertow.deployment;
+package io.quarkus.undertow.deployment.impl;
 
 import io.quarkus.arc.deployment.BeanDefiningAnnotationBuildItem;
 import io.quarkus.deployment.annotations.BuildProducer;

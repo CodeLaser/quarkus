@@ -1,4 +1,4 @@
-package io.quarkus.undertow.deployment;
+package io.quarkus.undertow.deployment.impl;
 
 import static io.quarkus.deployment.annotations.ExecutionTime.STATIC_INIT;
 import static io.undertow.servlet.api.SecurityInfo.EmptyRoleSemantic.AUTHENTICATE;
@@ -118,6 +118,19 @@ import io.quarkus.deployment.util.ServiceUtil;
 import io.quarkus.maven.dependency.ResolvedDependency;
 import io.quarkus.runtime.RuntimeValue;
 import io.quarkus.runtime.logging.LogBuildTimeConfig;
+import io.quarkus.undertow.deployment.FilterBuildItem;
+import io.quarkus.undertow.deployment.HttpHandlerWrapperBuildItem;
+import io.quarkus.undertow.deployment.IgnoredServletContainerInitializerBuildItem;
+import io.quarkus.undertow.deployment.KnownPathsBuildItem;
+import io.quarkus.undertow.deployment.ListenerBuildItem;
+import io.quarkus.undertow.deployment.ServletBuildItem;
+import io.quarkus.undertow.deployment.ServletContainerInitializerBuildItem;
+import io.quarkus.undertow.deployment.ServletContextAttributeBuildItem;
+import io.quarkus.undertow.deployment.ServletContextPathBuildItem;
+import io.quarkus.undertow.deployment.ServletDeploymentManagerBuildItem;
+import io.quarkus.undertow.deployment.ServletExtensionBuildItem;
+import io.quarkus.undertow.deployment.ServletInitParamBuildItem;
+import io.quarkus.undertow.deployment.WebMetadataBuildItem;
 import io.quarkus.undertow.runtime.HttpSessionContext;
 import io.quarkus.undertow.runtime.QuarkusIdentityManager;
 import io.quarkus.undertow.runtime.ServletHttpSecurityPolicy;
@@ -690,12 +703,12 @@ public class UndertowBuildStep {
 
         for (ServletContainerInitializerBuildItem sci : servletContainerInitializerBuildItems) {
             Set<Class<?>> handlesTypes = new LinkedHashSet<>();
-            for (String handledType : sci.handlesTypes.stream().sorted().toList()) {
+            for (String handledType : sci.getHandlesTypes().stream().sorted().toList()) {
                 handlesTypes.add(context.classProxy(handledType));
             }
 
             recorder.addServletContainerInitializer(deployment,
-                    (Class<? extends ServletContainerInitializer>) context.classProxy(sci.sciClass), handlesTypes);
+                    (Class<? extends ServletContainerInitializer>) context.classProxy(sci.getSciClass()), handlesTypes);
         }
         if (webMetaData.getErrorPages() != null) {
             for (ErrorPageMetaData errorPage : webMetaData.getErrorPages()) {
