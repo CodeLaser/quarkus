@@ -1,6 +1,6 @@
 package io.quarkus.redis.datasource.search;
 
-import static io.quarkus.redis.runtime.datasource.Validation.notNullOrEmpty;
+import static io.quarkus.redis.datasource.internal.Validation.notNullOrEmpty;
 
 import java.util.ArrayList;
 import java.util.Collections;

@@ -8,6 +8,7 @@ import static io.smallrye.mutiny.helpers.ParameterValidation.positive;
 import java.lang.reflect.Type;
 import java.util.Map;
 
+import io.quarkus.redis.datasource.internal.Marshaller;
 import io.smallrye.mutiny.Uni;
 import io.vertx.redis.client.Command;
 import io.vertx.redis.client.Response;

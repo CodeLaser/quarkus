@@ -1,8 +1,8 @@
 
 package io.quarkus.redis.runtime.datasource;
 
-import static io.quarkus.redis.runtime.datasource.Validation.notNullOrEmpty;
-import static io.quarkus.redis.runtime.datasource.Validation.validateTimeout;
+import static io.quarkus.redis.datasource.internal.Validation.notNullOrEmpty;
+import static io.quarkus.redis.datasource.internal.Validation.validateTimeout;
 import static io.smallrye.mutiny.helpers.ParameterValidation.doesNotContainNull;
 import static io.smallrye.mutiny.helpers.ParameterValidation.nonNull;
 import static io.smallrye.mutiny.helpers.ParameterValidation.positive;
@@ -17,6 +17,7 @@ import java.util.List;
 import java.util.Map;
 
 import io.quarkus.redis.datasource.ScanArgs;
+import io.quarkus.redis.datasource.internal.Marshaller;
 import io.quarkus.redis.datasource.list.KeyValue;
 import io.quarkus.redis.datasource.sortedset.Range;
 import io.quarkus.redis.datasource.sortedset.ReactiveZScanCursor;

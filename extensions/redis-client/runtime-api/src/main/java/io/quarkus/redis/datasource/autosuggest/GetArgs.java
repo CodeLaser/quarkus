@@ -1,6 +1,6 @@
 package io.quarkus.redis.datasource.autosuggest;
 
-import static io.quarkus.redis.runtime.datasource.Validation.positive;
+import static io.quarkus.redis.datasource.internal.Validation.positive;
 
 import java.util.ArrayList;
 import java.util.List;

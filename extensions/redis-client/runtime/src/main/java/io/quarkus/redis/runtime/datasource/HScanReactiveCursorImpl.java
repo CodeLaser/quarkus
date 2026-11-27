@@ -7,6 +7,7 @@ import java.util.List;
 import java.util.Map;
 
 import io.quarkus.redis.datasource.hash.ReactiveHashScanCursor;
+import io.quarkus.redis.datasource.internal.Marshaller;
 import io.smallrye.mutiny.Multi;
 import io.smallrye.mutiny.Uni;
 import io.vertx.redis.client.Command;

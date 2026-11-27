@@ -5,6 +5,7 @@ import java.util.ArrayList;
 import java.util.List;
 import java.util.Set;
 
+import io.quarkus.redis.datasource.internal.Marshaller;
 import io.quarkus.redis.datasource.keys.ReactiveKeyScanCursor;
 import io.smallrye.mutiny.Multi;
 import io.smallrye.mutiny.Uni;

@@ -4,7 +4,7 @@ import java.util.ArrayList;
 import java.util.List;
 
 import io.quarkus.redis.datasource.RedisCommandExtraArguments;
-import io.quarkus.redis.runtime.datasource.Validation;
+import io.quarkus.redis.datasource.internal.Validation;
 
 /**
  * Represents a stream range.

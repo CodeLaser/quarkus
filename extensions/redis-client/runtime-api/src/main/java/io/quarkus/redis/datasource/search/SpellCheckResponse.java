@@ -4,7 +4,7 @@ import java.util.List;
 import java.util.Map;
 import java.util.Set;
 
-import io.quarkus.redis.runtime.datasource.Validation;
+import io.quarkus.redis.datasource.internal.Validation;
 
 public class SpellCheckResponse {
     private final Map<String, List<SpellCheckSuggestion>> response;

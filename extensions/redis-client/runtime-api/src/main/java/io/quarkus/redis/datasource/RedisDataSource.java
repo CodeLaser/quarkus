@@ -1,43 +1,42 @@
 package io.quarkus.redis.datasource;
 
-import static io.quarkus.redis.runtime.datasource.Marshaller.STRING_TYPE_REFERENCE;
+import static io.quarkus.redis.datasource.internal.Marshaller.STRING_TYPE_REFERENCE;
 
-import java.util.function.BiFunction;
+import java.util.function.BiConsumer;
+import java.util.function.Consumer;
 import java.util.function.Function;
 
-import io.quarkus.redis.datasource.autosuggest.ReactiveAutoSuggestCommands;
-import io.quarkus.redis.datasource.bitmap.ReactiveBitMapCommands;
-import io.quarkus.redis.datasource.bloom.ReactiveBloomCommands;
-import io.quarkus.redis.datasource.countmin.ReactiveCountMinCommands;
-import io.quarkus.redis.datasource.cuckoo.ReactiveCuckooCommands;
-import io.quarkus.redis.datasource.geo.ReactiveGeoCommands;
-import io.quarkus.redis.datasource.graph.ReactiveGraphCommands;
-import io.quarkus.redis.datasource.hash.ReactiveHashCommands;
-import io.quarkus.redis.datasource.hyperloglog.ReactiveHyperLogLogCommands;
-import io.quarkus.redis.datasource.json.ReactiveJsonCommands;
-import io.quarkus.redis.datasource.keys.ReactiveKeyCommands;
-import io.quarkus.redis.datasource.list.ReactiveListCommands;
-import io.quarkus.redis.datasource.pubsub.ReactivePubSubCommands;
-import io.quarkus.redis.datasource.search.ReactiveSearchCommands;
-import io.quarkus.redis.datasource.set.ReactiveSetCommands;
-import io.quarkus.redis.datasource.sortedset.ReactiveSortedSetCommands;
-import io.quarkus.redis.datasource.stream.ReactiveStreamCommands;
-import io.quarkus.redis.datasource.string.ReactiveStringCommands;
-import io.quarkus.redis.datasource.timeseries.ReactiveTimeSeriesCommands;
-import io.quarkus.redis.datasource.topk.ReactiveTopKCommands;
+import io.quarkus.redis.datasource.autosuggest.AutoSuggestCommands;
+import io.quarkus.redis.datasource.bitmap.BitMapCommands;
+import io.quarkus.redis.datasource.bloom.BloomCommands;
+import io.quarkus.redis.datasource.countmin.CountMinCommands;
+import io.quarkus.redis.datasource.cuckoo.CuckooCommands;
+import io.quarkus.redis.datasource.geo.GeoCommands;
+import io.quarkus.redis.datasource.graph.GraphCommands;
+import io.quarkus.redis.datasource.hash.HashCommands;
+import io.quarkus.redis.datasource.hyperloglog.HyperLogLogCommands;
+import io.quarkus.redis.datasource.json.JsonCommands;
+import io.quarkus.redis.datasource.keys.KeyCommands;
+import io.quarkus.redis.datasource.list.ListCommands;
+import io.quarkus.redis.datasource.pubsub.PubSubCommands;
+import io.quarkus.redis.datasource.search.SearchCommands;
+import io.quarkus.redis.datasource.set.SetCommands;
+import io.quarkus.redis.datasource.sortedset.SortedSetCommands;
+import io.quarkus.redis.datasource.stream.StreamCommands;
+import io.quarkus.redis.datasource.string.StringCommands;
+import io.quarkus.redis.datasource.timeseries.TimeSeriesCommands;
+import io.quarkus.redis.datasource.topk.TopKCommands;
 import io.quarkus.redis.datasource.transactions.OptimisticLockingTransactionResult;
-import io.quarkus.redis.datasource.transactions.ReactiveTransactionalRedisDataSource;
 import io.quarkus.redis.datasource.transactions.TransactionResult;
-import io.quarkus.redis.datasource.value.ReactiveValueCommands;
+import io.quarkus.redis.datasource.transactions.TransactionalRedisDataSource;
+import io.quarkus.redis.datasource.value.ValueCommands;
 import io.smallrye.common.annotation.Experimental;
-import io.smallrye.mutiny.Uni;
-import io.vertx.mutiny.redis.client.Redis;
 import io.vertx.redis.client.Command;
 import io.vertx.redis.client.Response;
 import tools.jackson.core.type.TypeReference;
 
 /**
- * Non-Blocking and Reactive Redis Data Source.
+ * Synchronous / Blocking Redis Data Source.
  * <p>
  * This class provides access to various <em>groups of methods</em>. Each method execute a Redis {@code command}.
  * Groups and methods are type-safe. The decomposition follows the Redis API group.
@@ -45,64 +44,63 @@ import tools.jackson.core.type.TypeReference;
  * NOTE: Not all commands are exposed from this API. This is done on purpose. You can always use the low-level Redis
  * client to execute others commands.
  */
-public interface ReactiveRedisDataSource {
+public interface RedisDataSource {
 
     /**
-     * Obtains a {@link ReactiveRedisDataSource} that uses a single connection to the Redis server
-     * and passes it to the given {@code function}. The connection is acquired from the pool
-     * and released when the {@code Uni} returned by {@code function} produces an item or a failure.
+     * Obtains a {@link RedisDataSource} that uses a single connection to the Redis server
+     * and passes it to the given {@code consumer} block. The connection is acquired from the pool
+     * and released when the consumer completes.
      *
-     * @param function the function receiving the connection and producing {@code null} when the
-     *        connection can be released.
+     * @param consumer the consumer receiving the connection and returning when the connection can be released.
      */
-    Uni<Void> withConnection(Function<ReactiveRedisDataSource, Uni<Void>> function);
+    void withConnection(Consumer<RedisDataSource> consumer);
 
     /**
-     * Obtains a {@link ReactiveRedisDataSource} that enqueues commands in a Redis Transaction ({@code MULTI})
+     * Obtains a {@link RedisDataSource} that enqueues commands in a Redis Transaction ({@code MULTI})
      * and passes it to the given {@code tx} block. Note that the transaction acquires a single connection
-     * and all the commands are enqueued on this connection. The commands are only executed when the {@code Uni}
-     * returned by {@code tx} produces an item.
+     * and all the commands are enqueued on this connection. The commands are only executed when the passed
+     * {@code tx} block completes.
      * <p>
      * The results of the commands can be obtained from the returned {@link TransactionResult}.
      * Errors are represented as {@code Throwable}s in the {@code TransactionResult}.
      * <p>
-     * The user can discard a transaction using the {@link ReactiveTransactionalRedisDataSource#discard()} method.
+     * The user can discard a transaction using the {@link TransactionalRedisDataSource#discard()} method.
      * In this case, the produced {@link TransactionResult} is empty.
-     * If the {@code tx} block completes with a failure, the transaction is discarded automatically and
-     * the resulting {@code Uni} completes with the same failure.
+     * If the {@code tx} block throws an exception, the transaction is discarded automatically and
+     * the exception is rethrown.
      *
      * @param tx the consumer receiving the transactional Redis data source. The enqueued commands are only executed
-     *        when this block completes with an item.
+     *        at the end of the block.
      */
-    Uni<TransactionResult> withTransaction(Function<ReactiveTransactionalRedisDataSource, Uni<Void>> tx);
+    TransactionResult withTransaction(Consumer<TransactionalRedisDataSource> tx);
 
     /**
-     * Obtains a {@link ReactiveRedisDataSource} that enqueues commands in a Redis Transaction ({@code WATCH} & {@code MULTI}),
+     * Obtains a {@link RedisDataSource} that enqueues commands in a Redis Transaction ({@code WATCH} & {@code MULTI}),
      * starts watching the given {@code watchedKeys}, and passes it to the given {@code tx} block.
      * Note that the transaction acquires a single connection and all the commands are enqueued on this connection.
-     * The commands are only executed when the {@code Uni} returned by {@code tx} produces an item.
+     * The commands are only executed when the passed {@code tx} block completes.
      * <p>
      * The results of the commands can be obtained from the returned {@link TransactionResult}.
      * Errors are represented as {@code Throwable}s in the {@code TransactionResult}.
      * <p>
-     * The user can discard a transaction using the {@link ReactiveTransactionalRedisDataSource#discard()} method.
+     * The user can discard a transaction using the {@link TransactionalRedisDataSource#discard()} method.
      * In this case, the produced {@link TransactionResult} is empty.
-     * If the {@code tx} block completes with a failure, the transaction is discarded automatically and
-     * the resulting {@code Uni} completes with the same failure.
+     * If the {@code tx} block throws an exception, the transaction is discarded automatically and
+     * the exception is rethrown.
      *
      * @param tx the consumer receiving the transactional Redis data source. The enqueued commands are only executed
-     *        when this block completes with an item.
+     *        at the end of the block.
      * @param watchedKeys the keys to watch during the execution of the transaction. If one of these key is modified before
      *        the completion of the transaction, the transaction is discarded.
      */
-    Uni<TransactionResult> withTransaction(Function<ReactiveTransactionalRedisDataSource, Uni<Void>> tx, String... watchedKeys);
+    TransactionResult withTransaction(Consumer<TransactionalRedisDataSource> tx, String... watchedKeys);
 
     /**
-     * Obtains a {@link ReactiveRedisDataSource} that enqueues commands in a Redis Transaction ({@code WATCH} & {@code MULTI}),
+     * Obtains a {@link RedisDataSource} that enqueues commands in a Redis Transaction ({@code WATCH} & {@code MULTI}),
      * starts watching the given {@code watchedKeys}, passes it to the given {@code preTx} block and if that
      * doesn't fail, passes it again to the given {@code tx} block. Note that the transaction acquires a single
      * connection and all the commands are enqueued on this connection. The commands are only executed when
-     * the {@code Uni} returned by {@code tx} produces an item.
+     * the passed {@code tx} block completes.
      * <p>
      * This variant also allows executing code before the transaction gets started but after the keys are watched:
      *
@@ -116,33 +114,31 @@ public interface ReactiveRedisDataSource {
      * EXEC
      * </pre>
      * <p>
-     * The {@code preTxBlock} returns a {@link Uni Uni&lt;I&gt;}. The produced value is received by the {@code tx} block,
+     * The {@code preTxBlock} returns an {@code I}. The produced value is received by the {@code tx} block,
      * which can use that value to execute the appropriate operation in the transaction. The produced value can also be
      * obtained from the returned {@link OptimisticLockingTransactionResult}. Commands issued in the {@code preTx}
-     * block must use the passed (single-connection) {@link ReactiveRedisDataSource} instance.
+     * block must use the passed (single-connection) {@link RedisDataSource} instance.
      * <p>
-     * If the {@code preTx} block completes with a failure, all watched keys are {@code UNWATCH}ed and the returned
-     * {@code Uni} completes with the same failure.
+     * If the {@code preTx} block throws an exception, all watched keys are {@code UNWATCH}ed and the exception is rethrown.
      * <p>
      * This construct allows implementing operation relying on optimistic locking.
      * The results of the commands can be obtained from the returned {@link OptimisticLockingTransactionResult}.
      * Errors are represented as {@code Throwable}s in the {@code OptimisticLockingTransactionResult}.
      * <p>
-     * The user can discard a transaction using the {@link ReactiveTransactionalRedisDataSource#discard()} method.
+     * The user can discard a transaction using the {@link TransactionalRedisDataSource#discard()} method.
      * In this case, the produced {@link OptimisticLockingTransactionResult} is empty.
-     * If the {@code tx} block completes with a failure, the transaction is discarded automatically and
-     * the resulting {@code Uni} completes with the same failure.
+     * If the {@code tx} block throws an exception, the transaction is discarded automatically and
+     * the exception is rethrown.
      *
      * @param preTx the consumer receiving the Redis data source before the transaction is started but after
      *        the {@code watchedKeys} are watched.
      * @param tx the consumer receiving the transactional Redis data source after the transaction is started.
-     *        The enqueued commands are only executed when this block completes with an item.
+     *        The enqueued commands are only executed at the end of the block.
      * @param watchedKeys the keys to watch during the execution of the transaction. If one of these key is modified before
      *        the completion of the transaction, the transaction is discarded.
      */
-    <I> Uni<OptimisticLockingTransactionResult<I>> withTransaction(Function<ReactiveRedisDataSource, Uni<I>> preTx,
-            BiFunction<I, ReactiveTransactionalRedisDataSource, Uni<Void>> tx,
-            String... watchedKeys);
+    <I> OptimisticLockingTransactionResult<I> withTransaction(Function<RedisDataSource, I> preTx,
+            BiConsumer<I, TransactionalRedisDataSource> tx, String... watchedKeys);
 
     /**
      * Execute the command <a href="https://redis.io/commands/select">SELECT</a>.
@@ -150,11 +146,11 @@ public interface ReactiveRedisDataSource {
      * Group: connection
      * Requires Redis 1.0.0
      * <p>
-     * This method is expected to be used inside a {@link #withConnection(Function)} block.
+     * This method is expected to be used inside a {@link #withConnection(Consumer)} block.
      *
      * @param index the database index.
      **/
-    Uni<Void> select(long index);
+    void select(long index);
 
     /**
      * Execute the command <a href="https://redis.io/commands/flushall">FLUSHALL</a>.
@@ -162,7 +158,7 @@ public interface ReactiveRedisDataSource {
      * Group: server
      * Requires Redis 1.0.0
      **/
-    Uni<Void> flushall();
+    void flushall();
 
     /**
      * Gets the object to execute commands manipulating hashes (a.k.a. {@code Map&lt;F, V&gt;}).
@@ -173,14 +169,14 @@ public interface ReactiveRedisDataSource {
      * {@code hash(UUID.class, String.class, Person.class)}.
      *
      * @param redisKeyType the class of the keys
-     * @param fieldType the class of the fields
-     * @param valueType the class of the values
+     * @param typeOfField the class of the fields
+     * @param typeOfValue the class of the values
      * @param <K> the type of the redis key
      * @param <F> the type of the fields (map's keys)
      * @param <V> the type of the value
      * @return the object to execute commands manipulating hashes (a.k.a. {@code Map&lt;K, V&gt;}).
      */
-    <K, F, V> ReactiveHashCommands<K, F, V> hash(Class<K> redisKeyType, Class<F> fieldType, Class<V> valueType);
+    <K, F, V> HashCommands<K, F, V> hash(Class<K> redisKeyType, Class<F> typeOfField, Class<V> typeOfValue);
 
     /**
      * Gets the object to execute commands manipulating hashes (a.k.a. {@code Map&lt;F, V&gt;}).
@@ -191,15 +187,15 @@ public interface ReactiveRedisDataSource {
      * {@code hash(UUID.class, String.class, Person.class)}.
      *
      * @param redisKeyType the class of the keys
-     * @param fieldType the class of the fields
-     * @param valueType the class of the values
+     * @param typeOfField the class of the fields
+     * @param typeOfValue the class of the values
      * @param <K> the type of the redis key
      * @param <F> the type of the fields (map's keys)
      * @param <V> the type of the value
      * @return the object to execute commands manipulating hashes (a.k.a. {@code Map&lt;K, V&gt;}).
      */
-    <K, F, V> ReactiveHashCommands<K, F, V> hash(TypeReference<K> redisKeyType, TypeReference<F> fieldType,
-            TypeReference<V> valueType);
+    <K, F, V> HashCommands<K, F, V> hash(TypeReference<K> redisKeyType, TypeReference<F> typeOfField,
+            TypeReference<V> typeOfValue);
 
     /**
      * Gets the object to execute commands manipulating hashes (a.k.a. {@code Map&lt;String, V&gt;}).
@@ -210,7 +206,7 @@ public interface ReactiveRedisDataSource {
      * @param <V> the type of the value
      * @return the object to execute commands manipulating hashes (a.k.a. {@code Map&lt;String, V&gt;}).
      */
-    default <V> ReactiveHashCommands<String, String, V> hash(Class<V> typeOfValue) {
+    default <V> HashCommands<String, String, V> hash(Class<V> typeOfValue) {
         return hash(String.class, String.class, typeOfValue);
     }
 
@@ -223,7 +219,7 @@ public interface ReactiveRedisDataSource {
      * @param <V> the type of the value
      * @return the object to execute commands manipulating hashes (a.k.a. {@code Map&lt;String, V&gt;}).
      */
-    default <V> ReactiveHashCommands<String, String, V> hash(TypeReference<V> typeOfValue) {
+    default <V> HashCommands<String, String, V> hash(TypeReference<V> typeOfValue) {
         return hash(STRING_TYPE_REFERENCE, STRING_TYPE_REFERENCE, typeOfValue);
     }
 
@@ -238,7 +234,7 @@ public interface ReactiveRedisDataSource {
      * @param <V> the type of the member
      * @return the object to execute geo commands.
      */
-    <K, V> ReactiveGeoCommands<K, V> geo(Class<K> redisKeyType, Class<V> memberType);
+    <K, V> GeoCommands<K, V> geo(Class<K> redisKeyType, Class<V> memberType);
 
     /**
      * Gets the object to execute commands manipulating geo items (a.k.a. {@code {longitude, latitude, member}}).
@@ -251,7 +247,7 @@ public interface ReactiveRedisDataSource {
      * @param <V> the type of the member
      * @return the object to execute geo commands.
      */
-    <K, V> ReactiveGeoCommands<K, V> geo(TypeReference<K> redisKeyType, TypeReference<V> memberType);
+    <K, V> GeoCommands<K, V> geo(TypeReference<K> redisKeyType, TypeReference<V> memberType);
 
     /**
      * Gets the object to execute commands manipulating geo items (a.k.a. {@code {longitude, latitude, member}}).
@@ -262,7 +258,7 @@ public interface ReactiveRedisDataSource {
      * @param <V> the type of the member
      * @return the object to execute geo commands.
      */
-    default <V> ReactiveGeoCommands<String, V> geo(Class<V> memberType) {
+    default <V> GeoCommands<String, V> geo(Class<V> memberType) {
         return geo(String.class, memberType);
     }
 
@@ -275,7 +271,7 @@ public interface ReactiveRedisDataSource {
      * @param <V> the type of the member
      * @return the object to execute geo commands.
      */
-    default <V> ReactiveGeoCommands<String, V> geo(TypeReference<V> memberType) {
+    default <V> GeoCommands<String, V> geo(TypeReference<V> memberType) {
         return geo(STRING_TYPE_REFERENCE, memberType);
     }
 
@@ -286,7 +282,7 @@ public interface ReactiveRedisDataSource {
      * @param <K> the type of the key
      * @return the object to execute commands manipulating keys.
      */
-    <K> ReactiveKeyCommands<K> key(Class<K> redisKeyType);
+    <K> KeyCommands<K> key(Class<K> redisKeyType);
 
     /**
      * Gets the object to execute commands manipulating keys and expiration times.
@@ -295,14 +291,14 @@ public interface ReactiveRedisDataSource {
      * @param <K> the type of the key
      * @return the object to execute commands manipulating keys.
      */
-    <K> ReactiveKeyCommands<K> key(TypeReference<K> redisKeyType);
+    <K> KeyCommands<K> key(TypeReference<K> redisKeyType);
 
     /**
      * Gets the object to execute commands manipulating keys and expiration times.
      *
      * @return the object to execute commands manipulating keys.
      */
-    default ReactiveKeyCommands<String> key() {
+    default KeyCommands<String> key() {
         return key(String.class);
     }
 
@@ -315,7 +311,7 @@ public interface ReactiveRedisDataSource {
      * @param <V> the type of the value
      * @return the object to manipulate sorted sets.
      */
-    <K, V> ReactiveSortedSetCommands<K, V> sortedSet(Class<K> redisKeyType, Class<V> valueType);
+    <K, V> SortedSetCommands<K, V> sortedSet(Class<K> redisKeyType, Class<V> valueType);
 
     /**
      * Gets the object to execute commands manipulating sorted sets.
@@ -326,7 +322,7 @@ public interface ReactiveRedisDataSource {
      * @param <V> the type of the value
      * @return the object to manipulate sorted sets.
      */
-    <K, V> ReactiveSortedSetCommands<K, V> sortedSet(TypeReference<K> redisKeyType, TypeReference<V> valueType);
+    <K, V> SortedSetCommands<K, V> sortedSet(TypeReference<K> redisKeyType, TypeReference<V> valueType);
 
     /**
      * Gets the object to execute commands manipulating sorted sets.
@@ -335,7 +331,7 @@ public interface ReactiveRedisDataSource {
      * @param <V> the type of the value
      * @return the object to manipulate sorted sets.
      */
-    default <V> ReactiveSortedSetCommands<String, V> sortedSet(Class<V> valueType) {
+    default <V> SortedSetCommands<String, V> sortedSet(Class<V> valueType) {
         return sortedSet(String.class, valueType);
     }
 
@@ -346,12 +342,13 @@ public interface ReactiveRedisDataSource {
      * @param <V> the type of the value
      * @return the object to manipulate sorted sets.
      */
-    default <V> ReactiveSortedSetCommands<String, V> sortedSet(TypeReference<V> valueType) {
+    default <V> SortedSetCommands<String, V> sortedSet(TypeReference<V> valueType) {
         return sortedSet(STRING_TYPE_REFERENCE, valueType);
     }
 
     /**
      * Gets the object to execute commands manipulating stored strings.
+     *
      * <p>
      * <strong>NOTE:</strong> Instead of {@code string}, this group is named {@code value} to avoid the confusion with the
      * Java String type. Indeed, Redis strings can be strings, numbers, byte arrays...
@@ -362,10 +359,11 @@ public interface ReactiveRedisDataSource {
      * @param <V> the type of the value
      * @return the object to manipulate stored strings.
      */
-    <K, V> ReactiveValueCommands<K, V> value(Class<K> redisKeyType, Class<V> valueType);
+    <K, V> ValueCommands<K, V> value(Class<K> redisKeyType, Class<V> valueType);
 
     /**
      * Gets the object to execute commands manipulating stored strings.
+     *
      * <p>
      * <strong>NOTE:</strong> Instead of {@code string}, this group is named {@code value} to avoid the confusion with the
      * Java String type. Indeed, Redis strings can be strings, numbers, byte arrays...
@@ -376,10 +374,11 @@ public interface ReactiveRedisDataSource {
      * @param <V> the type of the value
      * @return the object to manipulate stored strings.
      */
-    <K, V> ReactiveValueCommands<K, V> value(TypeReference<K> redisKeyType, TypeReference<V> valueType);
+    <K, V> ValueCommands<K, V> value(TypeReference<K> redisKeyType, TypeReference<V> valueType);
 
     /**
      * Gets the object to execute commands manipulating stored strings.
+     *
      * <p>
      * <strong>NOTE:</strong> Instead of {@code string}, this group is named {@code value} to avoid the confusion with the
      * Java String type. Indeed, Redis strings can be strings, numbers, byte arrays...
@@ -388,12 +387,13 @@ public interface ReactiveRedisDataSource {
      * @param <V> the type of the value
      * @return the object to manipulate stored strings.
      */
-    default <V> ReactiveValueCommands<String, V> value(Class<V> valueType) {
+    default <V> ValueCommands<String, V> value(Class<V> valueType) {
         return value(String.class, valueType);
     }
 
     /**
      * Gets the object to execute commands manipulating stored strings.
+     *
      * <p>
      * <strong>NOTE:</strong> Instead of {@code string}, this group is named {@code value} to avoid the confusion with the
      * Java String type. Indeed, Redis strings can be strings, numbers, byte arrays...
@@ -402,7 +402,7 @@ public interface ReactiveRedisDataSource {
      * @param <V> the type of the value
      * @return the object to manipulate stored strings.
      */
-    default <V> ReactiveValueCommands<String, V> value(TypeReference<V> valueType) {
+    default <V> ValueCommands<String, V> value(TypeReference<V> valueType) {
         return value(STRING_TYPE_REFERENCE, valueType);
     }
 
@@ -417,7 +417,7 @@ public interface ReactiveRedisDataSource {
      * @deprecated Use {@link #value(Class, Class)} instead
      */
     @Deprecated
-    <K, V> ReactiveStringCommands<K, V> string(Class<K> redisKeyType, Class<V> valueType);
+    <K, V> StringCommands<K, V> string(Class<K> redisKeyType, Class<V> valueType);
 
     /**
      * Gets the object to execute commands manipulating stored strings.
@@ -428,7 +428,7 @@ public interface ReactiveRedisDataSource {
      * @deprecated Use {@link #value(Class)} instead
      */
     @Deprecated
-    default <V> ReactiveStringCommands<String, V> string(Class<V> valueType) {
+    default <V> StringCommands<String, V> string(Class<V> valueType) {
         return string(String.class, valueType);
     }
 
@@ -441,7 +441,7 @@ public interface ReactiveRedisDataSource {
      * @param <V> the type of the member
      * @return the object to manipulate sets.
      */
-    <K, V> ReactiveSetCommands<K, V> set(Class<K> redisKeyType, Class<V> memberType);
+    <K, V> SetCommands<K, V> set(Class<K> redisKeyType, Class<V> memberType);
 
     /**
      * Gets the object to execute commands manipulating sets.
@@ -452,7 +452,7 @@ public interface ReactiveRedisDataSource {
      * @param <V> the type of the member
      * @return the object to manipulate sets.
      */
-    <K, V> ReactiveSetCommands<K, V> set(TypeReference<K> redisKeyType, TypeReference<V> memberType);
+    <K, V> SetCommands<K, V> set(TypeReference<K> redisKeyType, TypeReference<V> memberType);
 
     /**
      * Gets the object to execute commands manipulating sets.
@@ -461,7 +461,7 @@ public interface ReactiveRedisDataSource {
      * @param <V> the type of the member
      * @return the object to manipulate sets.
      */
-    default <V> ReactiveSetCommands<String, V> set(Class<V> memberType) {
+    default <V> SetCommands<String, V> set(Class<V> memberType) {
         return set(String.class, memberType);
     }
 
@@ -472,7 +472,7 @@ public interface ReactiveRedisDataSource {
      * @param <V> the type of the member
      * @return the object to manipulate sets.
      */
-    default <V> ReactiveSetCommands<String, V> set(TypeReference<V> memberType) {
+    default <V> SetCommands<String, V> set(TypeReference<V> memberType) {
         return set(STRING_TYPE_REFERENCE, memberType);
     }
 
@@ -485,7 +485,7 @@ public interface ReactiveRedisDataSource {
      * @param <V> the type of the member
      * @return the object to manipulate sets.
      */
-    <K, V> ReactiveListCommands<K, V> list(Class<K> redisKeyType, Class<V> memberType);
+    <K, V> ListCommands<K, V> list(Class<K> redisKeyType, Class<V> memberType);
 
     /**
      * Gets the object to execute commands manipulating lists.
@@ -494,7 +494,7 @@ public interface ReactiveRedisDataSource {
      * @param <V> the type of the member
      * @return the object to manipulate sets.
      */
-    default <V> ReactiveListCommands<String, V> list(Class<V> memberType) {
+    default <V> ListCommands<String, V> list(Class<V> memberType) {
         return list(String.class, memberType);
     }
 
@@ -507,7 +507,7 @@ public interface ReactiveRedisDataSource {
      * @param <V> the type of the member
      * @return the object to manipulate sets.
      */
-    <K, V> ReactiveListCommands<K, V> list(TypeReference<K> redisKeyType, TypeReference<V> memberType);
+    <K, V> ListCommands<K, V> list(TypeReference<K> redisKeyType, TypeReference<V> memberType);
 
     /**
      * Gets the object to execute commands manipulating lists.
@@ -516,7 +516,7 @@ public interface ReactiveRedisDataSource {
      * @param <V> the type of the member
      * @return the object to manipulate sets.
      */
-    default <V> ReactiveListCommands<String, V> list(TypeReference<V> memberType) {
+    default <V> ListCommands<String, V> list(TypeReference<V> memberType) {
         return list(STRING_TYPE_REFERENCE, memberType);
     }
 
@@ -529,7 +529,7 @@ public interface ReactiveRedisDataSource {
      * @param <V> the type of the member
      * @return the object to manipulate hyper log log data structures.
      */
-    <K, V> ReactiveHyperLogLogCommands<K, V> hyperloglog(Class<K> redisKeyType, Class<V> memberType);
+    <K, V> HyperLogLogCommands<K, V> hyperloglog(Class<K> redisKeyType, Class<V> memberType);
 
     /**
      * Gets the object to execute commands manipulating hyperloglog data structures.
@@ -540,7 +540,7 @@ public interface ReactiveRedisDataSource {
      * @param <V> the type of the member
      * @return the object to manipulate hyper log log data structures.
      */
-    <K, V> ReactiveHyperLogLogCommands<K, V> hyperloglog(TypeReference<K> redisKeyType, TypeReference<V> memberType);
+    <K, V> HyperLogLogCommands<K, V> hyperloglog(TypeReference<K> redisKeyType, TypeReference<V> memberType);
 
     /**
      * Gets the object to execute commands manipulating hyperloglog data structures.
@@ -549,7 +549,7 @@ public interface ReactiveRedisDataSource {
      * @param <V> the type of the member
      * @return the object to manipulate hyper log log data structures.
      */
-    default <V> ReactiveHyperLogLogCommands<String, V> hyperloglog(Class<V> memberType) {
+    default <V> HyperLogLogCommands<String, V> hyperloglog(Class<V> memberType) {
         return hyperloglog(String.class, memberType);
     }
 
@@ -560,7 +560,7 @@ public interface ReactiveRedisDataSource {
      * @param <V> the type of the member
      * @return the object to manipulate hyper log log data structures.
      */
-    default <V> ReactiveHyperLogLogCommands<String, V> hyperloglog(TypeReference<V> memberType) {
+    default <V> HyperLogLogCommands<String, V> hyperloglog(TypeReference<V> memberType) {
         return hyperloglog(STRING_TYPE_REFERENCE, memberType);
     }
 
@@ -571,7 +571,7 @@ public interface ReactiveRedisDataSource {
      * @param <K> the type of the key
      * @return the object to manipulate bitmap data structures.
      */
-    <K> ReactiveBitMapCommands<K> bitmap(Class<K> redisKeyType);
+    <K> BitMapCommands<K> bitmap(Class<K> redisKeyType);
 
     /**
      * Gets the object to execute commands manipulating bitmap data structures.
@@ -580,14 +580,14 @@ public interface ReactiveRedisDataSource {
      * @param <K> the type of the key
      * @return the object to manipulate bitmap data structures.
      */
-    <K> ReactiveBitMapCommands<K> bitmap(TypeReference<K> redisKeyType);
+    <K> BitMapCommands<K> bitmap(TypeReference<K> redisKeyType);
 
     /**
      * Gets the object to execute commands manipulating bitmap data structures.
      *
      * @return the object to manipulate bitmap data structures.
      */
-    default ReactiveBitMapCommands<String> bitmap() {
+    default BitMapCommands<String> bitmap() {
         return bitmap(String.class);
     }
 
@@ -602,7 +602,7 @@ public interface ReactiveRedisDataSource {
      * @param <V> the type of the value
      * @return the object to execute commands manipulating streams.
      */
-    <K, F, V> ReactiveStreamCommands<K, F, V> stream(Class<K> redisKeyType, Class<F> fieldType, Class<V> valueType);
+    <K, F, V> StreamCommands<K, F, V> stream(Class<K> redisKeyType, Class<F> fieldType, Class<V> valueType);
 
     /**
      * Gets the object to execute commands manipulating streams.
@@ -615,7 +615,7 @@ public interface ReactiveRedisDataSource {
      * @param <V> the type of the value
      * @return the object to execute commands manipulating streams.
      */
-    <K, F, V> ReactiveStreamCommands<K, F, V> stream(TypeReference<K> redisKeyType, TypeReference<F> fieldType,
+    <K, F, V> StreamCommands<K, F, V> stream(TypeReference<K> redisKeyType, TypeReference<F> fieldType,
             TypeReference<V> valueType);
 
     /**
@@ -624,7 +624,7 @@ public interface ReactiveRedisDataSource {
      * @param <V> the type of the value
      * @return the object to execute commands manipulating streams.
      */
-    default <V> ReactiveStreamCommands<String, String, V> stream(Class<V> typeOfValue) {
+    default <V> StreamCommands<String, String, V> stream(Class<V> typeOfValue) {
         return stream(String.class, String.class, typeOfValue);
     }
 
@@ -634,27 +634,9 @@ public interface ReactiveRedisDataSource {
      * @param <V> the type of the value
      * @return the object to execute commands manipulating streams.
      */
-    default <V> ReactiveStreamCommands<String, String, V> stream(TypeReference<V> typeOfValue) {
+    default <V> StreamCommands<String, String, V> stream(TypeReference<V> typeOfValue) {
         return stream(STRING_TYPE_REFERENCE, STRING_TYPE_REFERENCE, typeOfValue);
     }
-
-    /**
-     * Gets the object to publish and receive messages.
-     *
-     * @param messageType the type of message
-     * @param <V> the type of message
-     * @return the object to publish and subscribe to Redis channels
-     */
-    <V> ReactivePubSubCommands<V> pubsub(Class<V> messageType);
-
-    /**
-     * Gets the object to publish and receive messages.
-     *
-     * @param messageType the type of message
-     * @param <V> the type of message
-     * @return the object to publish and subscribe to Redis channels
-     */
-    <V> ReactivePubSubCommands<V> pubsub(TypeReference<V> messageType);
 
     /**
      * Gets the object to manipulate JSON values.
@@ -662,7 +644,7 @@ public interface ReactiveRedisDataSource {
      *
      * @return the object to manipulate JSON values.
      */
-    default ReactiveJsonCommands<String> json() {
+    default JsonCommands<String> json() {
         return json(String.class);
     }
 
@@ -673,7 +655,7 @@ public interface ReactiveRedisDataSource {
      * @param <K> the type of keys
      * @return the object to manipulate JSON values.
      */
-    <K> ReactiveJsonCommands<K> json(Class<K> redisKeyType);
+    <K> JsonCommands<K> json(Class<K> redisKeyType);
 
     /**
      * Gets the object to manipulate JSON values.
@@ -682,16 +664,16 @@ public interface ReactiveRedisDataSource {
      * @param <K> the type of keys
      * @return the object to manipulate JSON values.
      */
-    <K> ReactiveJsonCommands<K> json(TypeReference<K> redisKeyType);
+    <K> JsonCommands<K> json(TypeReference<K> redisKeyType);
 
     /**
      * Gets the object to manipulate Bloom filters.
      * This group requires the <a href="https://redis.io/docs/stack/bloom/">RedisBloom module</a>.
      *
      * @param <V> the type of the values added into the Bloom filter
-     * @return the object to manipulate bloom values.
+     * @return the object to manipulate bloom filters.
      */
-    default <V> ReactiveBloomCommands<String, V> bloom(Class<V> valueType) {
+    default <V> BloomCommands<String, V> bloom(Class<V> valueType) {
         return bloom(String.class, valueType);
     }
 
@@ -700,9 +682,9 @@ public interface ReactiveRedisDataSource {
      * This group requires the <a href="https://redis.io/docs/stack/bloom/">RedisBloom module</a>.
      *
      * @param <V> the type of the values added into the Bloom filter
-     * @return the object to manipulate bloom values.
+     * @return the object to manipulate bloom filters.
      */
-    default <V> ReactiveBloomCommands<String, V> bloom(TypeReference<V> valueType) {
+    default <V> BloomCommands<String, V> bloom(TypeReference<V> valueType) {
         return bloom(STRING_TYPE_REFERENCE, valueType);
     }
 
@@ -712,9 +694,9 @@ public interface ReactiveRedisDataSource {
      *
      * @param <K> the type of keys
      * @param <V> the type of the values added into the Bloom filter
-     * @return the object to manipulate bloom values.
+     * @return the object to manipulate bloom filters.
      */
-    <K, V> ReactiveBloomCommands<K, V> bloom(Class<K> redisKeyType, Class<V> valueType);
+    <K, V> BloomCommands<K, V> bloom(Class<K> redisKeyType, Class<V> valueType);
 
     /**
      * Gets the object to manipulate Bloom filters.
@@ -722,9 +704,9 @@ public interface ReactiveRedisDataSource {
      *
      * @param <K> the type of keys
      * @param <V> the type of the values added into the Bloom filter
-     * @return the object to manipulate bloom values.
+     * @return the object to manipulate bloom filters.
      */
-    <K, V> ReactiveBloomCommands<K, V> bloom(TypeReference<K> redisKeyType, TypeReference<V> valueType);
+    <K, V> BloomCommands<K, V> bloom(TypeReference<K> redisKeyType, TypeReference<V> valueType);
 
     /**
      * Gets the object to manipulate Cuckoo filters.
@@ -732,9 +714,9 @@ public interface ReactiveRedisDataSource {
      * filter support).
      *
      * @param <V> the type of the values added into the Cuckoo filter
-     * @return the object to manipulate Cuckoo values.
+     * @return the object to manipulate Cuckoo filters.
      */
-    default <V> ReactiveCuckooCommands<String, V> cuckoo(Class<V> valueType) {
+    default <V> CuckooCommands<String, V> cuckoo(Class<V> valueType) {
         return cuckoo(String.class, valueType);
     }
 
@@ -744,9 +726,9 @@ public interface ReactiveRedisDataSource {
      * filter support).
      *
      * @param <V> the type of the values added into the Cuckoo filter
-     * @return the object to manipulate Cuckoo values.
+     * @return the object to manipulate Cuckoo filters.
      */
-    default <V> ReactiveCuckooCommands<String, V> cuckoo(TypeReference<V> valueType) {
+    default <V> CuckooCommands<String, V> cuckoo(TypeReference<V> valueType) {
         return cuckoo(STRING_TYPE_REFERENCE, valueType);
     }
 
@@ -757,9 +739,9 @@ public interface ReactiveRedisDataSource {
      *
      * @param <K> the type of keys
      * @param <V> the type of the values added into the Cuckoo filter
-     * @return the object to manipulate Cuckoo values.
+     * @return the object to manipulate Cuckoo filters.
      */
-    <K, V> ReactiveCuckooCommands<K, V> cuckoo(Class<K> redisKeyType, Class<V> valueType);
+    <K, V> CuckooCommands<K, V> cuckoo(Class<K> redisKeyType, Class<V> valueType);
 
     /**
      * Gets the object to manipulate Cuckoo filters.
@@ -768,9 +750,9 @@ public interface ReactiveRedisDataSource {
      *
      * @param <K> the type of keys
      * @param <V> the type of the values added into the Cuckoo filter
-     * @return the object to manipulate Cuckoo values.
+     * @return the object to manipulate Cuckoo filters.
      */
-    <K, V> ReactiveCuckooCommands<K, V> cuckoo(TypeReference<K> redisKeyType, TypeReference<V> valueType);
+    <K, V> CuckooCommands<K, V> cuckoo(TypeReference<K> redisKeyType, TypeReference<V> valueType);
 
     /**
      * Gets the object to manipulate Count-Min sketches.
@@ -780,7 +762,7 @@ public interface ReactiveRedisDataSource {
      * @param <V> the type of the values added into the count-min sketches
      * @return the object to manipulate count-min sketches.
      */
-    default <V> ReactiveCountMinCommands<String, V> countmin(Class<V> valueType) {
+    default <V> CountMinCommands<String, V> countmin(Class<V> valueType) {
         return countmin(String.class, valueType);
     }
 
@@ -792,7 +774,7 @@ public interface ReactiveRedisDataSource {
      * @param <V> the type of the values added into the count-min sketches
      * @return the object to manipulate count-min sketches.
      */
-    default <V> ReactiveCountMinCommands<String, V> countmin(TypeReference<V> valueType) {
+    default <V> CountMinCommands<String, V> countmin(TypeReference<V> valueType) {
         return countmin(STRING_TYPE_REFERENCE, valueType);
     }
 
@@ -805,7 +787,7 @@ public interface ReactiveRedisDataSource {
      * @param <V> the type of the values added into the count-min sketches
      * @return the object to manipulate count-min sketches.
      */
-    <K, V> ReactiveCountMinCommands<K, V> countmin(Class<K> redisKeyType, Class<V> valueType);
+    <K, V> CountMinCommands<K, V> countmin(Class<K> redisKeyType, Class<V> valueType);
 
     /**
      * Gets the object to manipulate Count-Min sketches.
@@ -816,7 +798,7 @@ public interface ReactiveRedisDataSource {
      * @param <V> the type of the values added into the count-min sketches
      * @return the object to manipulate count-min sketches.
      */
-    <K, V> ReactiveCountMinCommands<K, V> countmin(TypeReference<K> redisKeyType, TypeReference<V> valueType);
+    <K, V> CountMinCommands<K, V> countmin(TypeReference<K> redisKeyType, TypeReference<V> valueType);
 
     /**
      * Gets the object to manipulate Top-K list.
@@ -826,7 +808,7 @@ public interface ReactiveRedisDataSource {
      * @param <V> the type of the values added into the top-k lists
      * @return the object to manipulate top-k lists.
      */
-    default <V> ReactiveTopKCommands<String, V> topk(Class<V> valueType) {
+    default <V> TopKCommands<String, V> topk(Class<V> valueType) {
         return topk(String.class, valueType);
     }
 
@@ -838,7 +820,7 @@ public interface ReactiveRedisDataSource {
      * @param <V> the type of the values added into the top-k lists
      * @return the object to manipulate top-k lists.
      */
-    default <V> ReactiveTopKCommands<String, V> topk(TypeReference<V> valueType) {
+    default <V> TopKCommands<String, V> topk(TypeReference<V> valueType) {
         return topk(STRING_TYPE_REFERENCE, valueType);
     }
 
@@ -851,7 +833,7 @@ public interface ReactiveRedisDataSource {
      * @param <V> the type of the values added into the top-k lists
      * @return the object to manipulate top-k lists.
      */
-    <K, V> ReactiveTopKCommands<K, V> topk(Class<K> redisKeyType, Class<V> valueType);
+    <K, V> TopKCommands<K, V> topk(Class<K> redisKeyType, Class<V> valueType);
 
     /**
      * Gets the object to manipulate Top-K list.
@@ -862,16 +844,16 @@ public interface ReactiveRedisDataSource {
      * @param <V> the type of the values added into the top-k lists
      * @return the object to manipulate top-k lists.
      */
-    <K, V> ReactiveTopKCommands<K, V> topk(TypeReference<K> redisKeyType, TypeReference<V> valueType);
+    <K, V> TopKCommands<K, V> topk(TypeReference<K> redisKeyType, TypeReference<V> valueType);
 
     /**
      * Gets the object to manipulate graphs.
      * This group requires the <a href="https://redis.io/docs/stack/graph/">RedisGraph module</a>.
      *
-     * @return the object to manipulate graphs lists.
+     * @return the object to manipulate graphs.
      */
-    @Experimental("The Redis graph support is experimental")
-    default ReactiveGraphCommands<String> graph() {
+    @Experimental("The Redis graph support is experimental, in addition, the graph module EOL")
+    default GraphCommands<String> graph() {
         return graph(String.class);
     }
 
@@ -882,8 +864,8 @@ public interface ReactiveRedisDataSource {
      * @param <K> the type of keys
      * @return the object to manipulate graphs lists.
      */
-    @Experimental("The Redis graph support is experimental")
-    <K> ReactiveGraphCommands<K> graph(Class<K> redisKeyType);
+    @Experimental("The Redis graph support is experimental, in addition, the graph module EOL")
+    <K> GraphCommands<K> graph(Class<K> redisKeyType);
 
     /**
      * Gets the object to emit commands from the {@code search} group.
@@ -891,11 +873,11 @@ public interface ReactiveRedisDataSource {
      *
      * @param <K> the type of keys
      * @return the object to search documents
-     * @deprecated Use the variant without parameter, as the index name must be a string.
+     * @deprecated Use the variant without parameter, as the index name must be a string
      */
     @Experimental("The Redis search support is experimental")
     @Deprecated
-    <K> ReactiveSearchCommands<K> search(Class<K> redisKeyType);
+    <K> SearchCommands<K> search(Class<K> redisKeyType);
 
     /**
      * Gets the object to emit commands from the {@code search} group.
@@ -904,7 +886,7 @@ public interface ReactiveRedisDataSource {
      * @return the object to search documents
      */
     @Experimental("The Redis Search support is experimental")
-    default ReactiveSearchCommands<String> search() {
+    default SearchCommands<String> search() {
         return search(String.class);
     }
 
@@ -916,7 +898,7 @@ public interface ReactiveRedisDataSource {
      * @return the object to get suggestions
      */
     @Experimental("The Redis auto-suggest support is experimental")
-    <K> ReactiveAutoSuggestCommands<K> autosuggest(Class<K> redisKeyType);
+    <K> AutoSuggestCommands<K> autosuggest(Class<K> redisKeyType);
 
     /**
      * Gets the object to emit commands from the {@code auto-suggest} group.
@@ -926,7 +908,7 @@ public interface ReactiveRedisDataSource {
      * @return the object to get suggestions
      */
     @Experimental("The Redis auto-suggest support is experimental")
-    <K> ReactiveAutoSuggestCommands<K> autosuggest(TypeReference<K> redisKeyType);
+    <K> AutoSuggestCommands<K> autosuggest(TypeReference<K> redisKeyType);
 
     /**
      * Gets the object to emit commands from the {@code auto-suggest} group.
@@ -935,7 +917,7 @@ public interface ReactiveRedisDataSource {
      * @return the object to get suggestions
      */
     @Experimental("The Redis auto-suggest support is experimental")
-    default ReactiveAutoSuggestCommands<String> autosuggest() {
+    default AutoSuggestCommands<String> autosuggest() {
         return autosuggest(String.class);
     }
 
@@ -947,7 +929,7 @@ public interface ReactiveRedisDataSource {
      * @return the object to manipulate time series
      */
     @Experimental("The Redis time series support is experimental")
-    <K> ReactiveTimeSeriesCommands<K> timeseries(Class<K> redisKeyType);
+    <K> TimeSeriesCommands<K> timeseries(Class<K> redisKeyType);
 
     /**
      * Gets the object to emit commands from the {@code time series} group.
@@ -957,7 +939,7 @@ public interface ReactiveRedisDataSource {
      * @return the object to manipulate time series
      */
     @Experimental("The Redis time series support is experimental")
-    <K> ReactiveTimeSeriesCommands<K> timeseries(TypeReference<K> redisKeyType);
+    <K> TimeSeriesCommands<K> timeseries(TypeReference<K> redisKeyType);
 
     /**
      * Gets the object to emit commands from the {@code time series} group.
@@ -966,9 +948,27 @@ public interface ReactiveRedisDataSource {
      * @return the object to manipulate time series
      */
     @Experimental("The Redis time series support is experimental")
-    default ReactiveTimeSeriesCommands<String> timeseries() {
+    default TimeSeriesCommands<String> timeseries() {
         return timeseries(String.class);
     }
+
+    /**
+     * Gets the objects to publish and receive messages.
+     *
+     * @param messageType the type of message
+     * @param <V> the type of message
+     * @return the object to publish and subscribe to Redis channels
+     */
+    <V> PubSubCommands<V> pubsub(Class<V> messageType);
+
+    /**
+     * Gets the objects to publish and receive messages.
+     *
+     * @param messageType the type of message
+     * @param <V> the type of message
+     * @return the object to publish and subscribe to Redis channels
+     */
+    <V> PubSubCommands<V> pubsub(TypeReference<V> messageType);
 
     /**
      * Executes a command.
@@ -978,7 +978,7 @@ public interface ReactiveRedisDataSource {
      * @param args the parameters, encoded as String.
      * @return the response
      */
-    Uni<Response> execute(String command, String... args);
+    Response execute(String command, String... args);
 
     /**
      * Executes a command.
@@ -988,10 +988,11 @@ public interface ReactiveRedisDataSource {
      * @param args the parameters, encoded as String.
      * @return the response
      */
-    Uni<Response> execute(Command command, String... args);
+    Response execute(Command command, String... args);
 
     /**
-     * @return the underlying Redis client.
+     * @return the reactive data source.
      */
-    Redis getRedis();
+    ReactiveRedisDataSource getReactive();
+
 }

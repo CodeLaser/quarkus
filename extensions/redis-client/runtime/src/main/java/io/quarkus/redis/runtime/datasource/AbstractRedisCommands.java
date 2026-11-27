@@ -2,6 +2,7 @@ package io.quarkus.redis.runtime.datasource;
 
 import java.util.Set;
 
+import io.quarkus.redis.datasource.internal.Marshaller;
 import io.smallrye.mutiny.Uni;
 import io.vertx.redis.client.Response;
 import io.vertx.redis.client.ResponseType;

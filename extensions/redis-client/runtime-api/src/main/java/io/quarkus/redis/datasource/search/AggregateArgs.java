@@ -1,7 +1,7 @@
 package io.quarkus.redis.datasource.search;
 
-import static io.quarkus.redis.runtime.datasource.Validation.notNullOrBlank;
-import static io.quarkus.redis.runtime.datasource.Validation.validateTimeout;
+import static io.quarkus.redis.datasource.internal.Validation.notNullOrBlank;
+import static io.quarkus.redis.datasource.internal.Validation.validateTimeout;
 import static io.smallrye.mutiny.helpers.ParameterValidation.doesNotContainNull;
 import static io.smallrye.mutiny.helpers.ParameterValidation.nonNull;
 import static io.smallrye.mutiny.helpers.ParameterValidation.positive;

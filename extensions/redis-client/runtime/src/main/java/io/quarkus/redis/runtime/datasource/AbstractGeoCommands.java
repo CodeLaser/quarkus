@@ -1,9 +1,9 @@
 package io.quarkus.redis.runtime.datasource;
 
-import static io.quarkus.redis.runtime.datasource.Validation.notNullOrEmpty;
-import static io.quarkus.redis.runtime.datasource.Validation.positive;
-import static io.quarkus.redis.runtime.datasource.Validation.validateLatitude;
-import static io.quarkus.redis.runtime.datasource.Validation.validateLongitude;
+import static io.quarkus.redis.datasource.internal.Validation.notNullOrEmpty;
+import static io.quarkus.redis.datasource.internal.Validation.positive;
+import static io.quarkus.redis.datasource.internal.Validation.validateLatitude;
+import static io.quarkus.redis.datasource.internal.Validation.validateLongitude;
 import static io.smallrye.mutiny.helpers.ParameterValidation.doesNotContainNull;
 import static io.smallrye.mutiny.helpers.ParameterValidation.nonNull;
 
@@ -26,6 +26,7 @@ import io.quarkus.redis.datasource.geo.GeoSearchArgs;
 import io.quarkus.redis.datasource.geo.GeoSearchStoreArgs;
 import io.quarkus.redis.datasource.geo.GeoUnit;
 import io.quarkus.redis.datasource.geo.GeoValue;
+import io.quarkus.redis.datasource.internal.Marshaller;
 import io.smallrye.mutiny.Uni;
 import io.vertx.redis.client.Command;
 import io.vertx.redis.client.Response;

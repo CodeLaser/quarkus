@@ -7,6 +7,7 @@ import static io.smallrye.mutiny.helpers.ParameterValidation.positive;
 import java.lang.reflect.Type;
 import java.time.Duration;
 
+import io.quarkus.redis.datasource.internal.Marshaller;
 import io.quarkus.redis.datasource.timeseries.AddArgs;
 import io.quarkus.redis.datasource.timeseries.Aggregation;
 import io.quarkus.redis.datasource.timeseries.AlterArgs;

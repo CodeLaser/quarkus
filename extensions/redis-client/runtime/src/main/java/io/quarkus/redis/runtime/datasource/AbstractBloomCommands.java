@@ -7,6 +7,7 @@ import java.lang.reflect.Type;
 
 import io.quarkus.redis.datasource.bloom.BfInsertArgs;
 import io.quarkus.redis.datasource.bloom.BfReserveArgs;
+import io.quarkus.redis.datasource.internal.Marshaller;
 import io.smallrye.mutiny.Uni;
 import io.vertx.redis.client.Command;
 import io.vertx.redis.client.Response;
